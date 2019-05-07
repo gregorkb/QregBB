@@ -1,61 +1,3 @@
-#' Retrieve weights from from Monte-Carlo block samples for the ETBB
-#'
-#' @param n length of observed time series.
-#' @param l block length.
-#' @param B the number of Monte-Carlo draws.
-#' @param seed a random number generating seed (optional).
-#' @param c a constant controlling the tapering of weight assignments over the blocks.
-#' @return a list containing an \code{n} by \code{B} matrix containing the the mass placed on the \code{n} observations by the ETBB empirical distribution in each of the \code{B} Monte-Carlo draws. Another object in the list gives more info.
-ETBBgetweights<-function(n,l,B,seed=NA,c=.43){
-
-	if(is.na(seed)) seed<-floor(runif(1)*100000)
-
-	ETBBweights<-.C("ETBBgetweights",
-	n = as.integer(n),
-	l = as.integer(l),
-	B = as.integer(B),
-	blkpts = integer(floor(n/l+1)),
-	f_tilde = double(B*n+l),
-	as.integer(seed),
-	weights = double(l),
-	as.double(c))		
-
-	weights <- matrix( ETBBweights$f_tilde[1:(n*B)],n,B)
-
-	output <-  list(ETBBweights = weights,
-			other = ETBBweights)
-
-	return(output)
-}
-
-
-#' Retrieve weights from from Monte-Carlo block samples for the MBB
-#'
-#' @param n length of observed time series.
-#' @param l block length.
-#' @param B the number of Monte-Carlo draws.
-#' @param seed a random number generating seed (optional).
-#' @return a list containing an \code{n} by \code{B} matrix containing the the mass placed on the \code{n} observations by the MBB empirical distribution in each of the \code{B} Monte-Carlo draws. Another object in the list gives more info.
-MBBgetweights<-function(n,l,B,seed=NA){
-
-	if(is.na(seed)) seed<-floor(runif(1)*100000)
-
-	MBBweights<-.C("MBBgetweights",
-	n = as.integer(n),
-	l = as.integer(l),
-	B = as.integer(B),
-	blkpts = integer(floor(n/l+1)),
-	f_tilde = double(B*n+l),
-	as.integer(seed))		
-
-	weights <- matrix( MBBweights$f_tilde[1:(n*B)],n,B)
-
-	output <-  list(MBBweights = weights,
-					other = MBBweights)
-
-	return(output)
-}
-
 #' Retrieve weights from from Monte-Carlo block samples for the MBB and ETBB
 #'
 #' @param n length of observed time series.
@@ -168,7 +110,6 @@ get.pi.tilde.MBB <- function(n,l)
 #' @param tau the quantile of interest.
 #' @return the value of the bootstrap expected value of the quantile regression objective function at the given beta.
 #' This function will be numerically maximized in order to define the SMBB and SETBB versions of the true parameter vector; that is, the maximizer of this function is used as the centering \eqn{\tilde \beta_n} in the pivot \eqn{\sqrt{n}(\hat \beta^*_n - \tilde \beta_n)} rather than the sample estimator.
-
 S.tilde <- function(beta,Y,X,pi.tilde,h,tau)
 {
 	
@@ -307,5 +248,214 @@ QregBB <- function(Y,X,tau,l,B=500,h=NULL,alpha=0.05)
 					SMBB.cov.est = SMBB.cov.est,
 					SETBB.cov.est = SETBB.cov.est
 					)
+					
+}
+
+
+IinJ <- function(I,J){sum(I %in% J) == 0}
+
+#' Computes D.star from paper
+#'
+#' @param Y the vector of response values.
+#' @param X the design matrix (including a column of ones for the intercept).
+#' @param beta parameter vector at which to compute the objective function.
+#' @param pi.star weights retrieved from the \code{AllBBgetweights} function.
+#' @param tau the quantile of interest.
+#' @returns the value of \eqn{\tilde D_n^*} from the paper.
+D.n.star <- function(Y,X,beta,tau,pi.star)
+{
+	
+	apply( - pi.star * X * ( tau - as.numeric( Y - X %*% beta <= 0)),2,sum)
+	
+}
+
+#' Chooses block sizes via the NPPI for quantile regression
+#'
+#' @param Y the vector of response values.
+#' @param X the design matrix (including a column of ones for the intercept).
+#' @param tau the quantile of interest.
+#' @param min.in.JAB the minimum number of Monte-Carlos draws desired in each jackknife draw
+#' @return a list of the NPPI-selected block sizes for the MBB, SMBB, ETBB, and SETBB.
+#' This function is based on the nonparametric plug-in (NPPI) method discussed in Lahiri (2003), which makes use of the jackknife-after-bootstrap (JAB).
+getNPPIblksizesQR <- function(Y,X,tau,min.in.JAB=100)
+{
+		
+	n <- length(Y)
+	d <- ncol(X) - 1
+	
+	l.1 <- round( n^(1/5)) # block size to use for estimation of B.hat and v.hat: (7.63) pg. 196 of Lahiri (2003) 
+	m <- floor( n^(1/3)*l.1^(2/3)) # block length for JAB--number of contiguous blocks to remove: (7.63) pg. 196 of Lahiri (2003)
+	l.2 <- 2*l.1
+
+	B <- round(min.in.JAB*( 1 - m/(n - l.1 + 1))^(-floor(n/l.1))) 
+
+	pi.tilde.MBB.l.1 <- get.pi.tilde.MBB(n,l.1)	
+	pi.tilde.MBB.l.2 <- get.pi.tilde.MBB(n,l.2)	
+	pi.tilde.ETBB.l.1 <- get.pi.tilde.ETBB(n,l.1)
+	pi.tilde.ETBB.l.2 <- get.pi.tilde.ETBB(n,l.2)
+	
+	model <- rq(Y ~ X+0, tau = tau)
+	beta.hat <- model$coef
+	
+	sj.bw <- bw.SJ(model$resid)
+
+	perturbations <- array(rnorm(n = n * (d+1) * B),dim=c(n,d+1,B))
+
+	MBB.boot.D.n.l.1 <- ETBB.boot.D.n.l.1 <- matrix(NA,B,d+1)	
+	SMBB.boot.D.n.l.1  <- SETBB.boot.D.n.l.1<- matrix(NA,B,d+1)
+
+	MBB.boot.D.n.l.2 <- ETBB.boot.D.n.l.2 <- matrix(NA,B,d+1)
+	SMBB.boot.D.n.l.2  <- SETBB.boot.D.n.l.2<- matrix(NA,B,d+1)
+
+	############## l.1 ##########
+				
+	AllBBweights.out.l.1 <- AllBBgetweights( n, l.1 ,B= B)
+	pi.star.MBB.l.1 <- AllBBweights.out.l.1$MBBweights
+	pi.star.ETBB.l.1 <- AllBBweights.out.l.1$ETBBweights
+	m.l.l.1 <- AllBBweights.out.l.1$m_l
+	
+	beta.tilde.MBB.l.1 <- rq(	Y ~ X+0,
+								tau =  tau,
+								weights = pi.tilde.MBB.l.1)$coef
+	
+	beta.tilde.ETBB.l.1 <- rq(	Y ~ X+0,
+								tau =  tau,
+								weights = pi.tilde.ETBB.l.1)$coef
+								
+	beta.tilde.SMBB.l.1 <- nlm(	f = S.tilde,
+								p = beta.hat,
+								Y = Y,
+								X = X,
+								pi.tilde = pi.tilde.MBB.l.1,
+								h = sj.bw,
+								tau =  tau,
+								iterlim = 200)$estimate
+											
+	beta.tilde.SETBB.l.1 <- nlm(	f = S.tilde,
+								p = beta.hat,
+								Y = Y,
+								X = X,
+								pi.tilde = pi.tilde.ETBB.l.1,
+								h = sj.bw,
+								tau =  tau,
+								iterlim = 200)$estimate
+								
+	############## l.2 ##########	
+		
+	AllBBweights.out.l.2 <- AllBBgetweights( n, l.2 ,B= B)
+	pi.star.MBB.l.2 <- AllBBweights.out.l.2$MBBweights
+	pi.star.ETBB.l.2 <- AllBBweights.out.l.2$ETBBweights
+	m.l.l.2 <- AllBBweights.out.l.2$m_l							
+								
+	beta.tilde.MBB.l.2 <- rq(	Y ~ X+0,
+								tau =  tau,
+								weights = pi.tilde.MBB.l.2)$coef
+	
+	beta.tilde.ETBB.l.2 <- rq(	Y ~ X+0,
+								tau =  tau,
+								weights = pi.tilde.ETBB.l.2)$coef
+								
+	beta.tilde.SMBB.l.2 <- nlm(	f = S.tilde,
+								p = beta.hat,
+								Y = Y,
+								X = X,
+								pi.tilde = pi.tilde.MBB.l.2,
+								h = sj.bw,
+								tau =  tau,
+								iterlim = 200)$estimate
+											
+	beta.tilde.SETBB.l.2 <- nlm(	f = S.tilde,
+								p = beta.hat,
+								Y = Y,
+								X = X,
+								pi.tilde = pi.tilde.ETBB.l.2,
+								h = sj.bw,
+								tau =  tau,
+								iterlim = 200)$estimate
+	
+		for(b in 1:B)
+		{
+						
+			Y.smooth <- Y + rnorm(n,0,sj.bw)
+			X.smooth <- X + cbind(rep(0,n),matrix(rnorm(n*d,0,sj.bw),n,d))
+		
+			############## l.1 ##########
+																								
+			MBB.boot.D.n.l.1[b,] <- D.n.star(Y,X,beta.tilde.MBB.l.1,tau= tau,pi.star.MBB.l.1[b])		
+			
+			ETBB.boot.D.n.l.1[b,] <- D.n.star(Y,X,beta.tilde.ETBB.l.1,tau= tau,pi.star.ETBB.l.1[b])						
+																					
+			SMBB.boot.D.n.l.1[b,] <- D.n.star(Y,X,beta.tilde.SMBB.l.1,tau= tau,pi.star.MBB.l.1[b])		
+			
+			SETBB.boot.D.n.l.1[b,] <- D.n.star(Y,X,beta.tilde.SETBB.l.1,tau= tau,pi.star.ETBB.l.1[b])		
+			
+			############## l.2 ##########
+												
+			MBB.boot.D.n.l.2[b,] <- D.n.star(Y,X,beta.tilde.MBB.l.2,tau= tau,pi.star.MBB.l.2[b])		
+			
+			ETBB.boot.D.n.l.2[b,] <- D.n.star(Y,X,beta.tilde.ETBB.l.2,tau= tau,pi.star.ETBB.l.2[b])						
+																					
+			SMBB.boot.D.n.l.2[b,] <- D.n.star(Y,X,beta.tilde.SMBB.l.2,tau= tau,pi.star.MBB.l.2[b])		
+			
+			SETBB.boot.D.n.l.2[b,] <- D.n.star(Y,X,beta.tilde.SETBB.l.2,tau= tau,pi.star.ETBB.l.2[b])		
+															
+		}
+		
+#######################################################################################################
+#######################################################################################################
+######  Choose block sizes with NPPI - okay, we will pretend that we are trying to estimate the trace of Sigma.
+######  There is a function of X with asymptotic variance equal to this trace...
+#######################################################################################################
+#######################################################################################################
+			
+	M <- ( n-l.1+1) - m + 1 # sample size after removing m blocks of length l.1
+	N <-  n - l.1 + 1
+	
+	MBB.JAB.phi.hat <- ETBB.JAB.phi.hat <- SMBB.JAB.phi.hat <- SETBB.JAB.phi.hat <- numeric()
+	
+	for(k in 1:M)
+	{
+
+		which.for.k <- apply(AllBBweights.out.l.1$blkpoints, 2, IinJ , I = c(k:(k+m-1)) )  
+		MBB.JAB.phi.hat[k] <-  sum(diag(cov(MBB.boot.D.n.l.1[which.for.k,]))) 	# estimated variance of sum(D.n) from MBB bootstraps which.for.k, block size l.1
+		ETBB.JAB.phi.hat[k] <-  sum(diag(cov(ETBB.boot.D.n.l.1[which.for.k,])))	# estimated variance of sum(D.n) from ETBB bootstraps which.for.k, block size l.1
+		SMBB.JAB.phi.hat[k] <-  sum(diag(cov(SMBB.boot.D.n.l.1[which.for.k,]))) # estimated variance of sum(D.n) from MBB bootstraps which.for.k, block size l.1
+		SETBB.JAB.phi.hat[k] <-  sum(diag(cov(SETBB.boot.D.n.l.1[which.for.k,])))# estimated variance of sum(D.n) from ETBB bootstraps which.for.k, block size l.1			
+	}
+	
+	MBB.phi <- sum(diag(cov(MBB.boot.D.n.l.1))) # estimated trace of cov(D.n) from all MBB bootstraps, block size l.1
+	MBB.JAB.phi.tilde <- (1/m)*( N * MBB.phi - (N - m) * MBB.JAB.phi.hat) # pseudo values, cf. pg. 192 Lahiri (2003)
+	var.hat.JAB.MBB <- m/(N - m) * mean((MBB.JAB.phi.tilde - MBB.phi )^2) # formula (7.53), pg. 192 of Lahiri (2003)
+	v.hat.JAB.MBB <-   n/l.1 * var.hat.JAB.MBB # pg. 195 of Lahiri (2003)
+	B.hat.MBB <- 2*l.1*(sum(diag(cov(MBB.boot.D.n.l.1))) - sum(diag(cov(MBB.boot.D.n.l.2)))) # pg. 195 of Lahiri (2003)
+	l.opt.MBB <- min(round(n/2),max(1,round(  n^(1/3) * ( 2 * B.hat.MBB^2 / v.hat.JAB.MBB )^(1/3) ))) # eq. (7.57), pg. 194 of Lahiri(2003)
+		
+	ETBB.phi <- sum(diag(cov(ETBB.boot.D.n.l.1))) # estimated trace of cov(D.n) from all ETBB bootstraps, block size l.1
+	ETBB.JAB.phi.tilde <- (1/m)*( N * ETBB.phi - (N - m) * ETBB.JAB.phi.hat) # pseudo values, cf. pg. 192 Lahiri (2003)
+	var.hat.JAB.ETBB <- m/(N - m) * mean((ETBB.JAB.phi.tilde - ETBB.phi )^2) # formula (7.53), pg. 192 of Lahiri (2003)
+	v.hat.JAB.ETBB <-   n/l.1 * var.hat.JAB.ETBB # pg. 195 of Lahiri (2003)
+	B.hat.ETBB <- (4/3)*l.1^2*(sum(diag(cov(ETBB.boot.D.n.l.1))) - sum(diag(cov(ETBB.boot.D.n.l.2)))) # pg. 195 of Lahiri (2003)
+	l.opt.ETBB <- min(round(n/2),max(1,round(  n^(1/5) * ( 4 * B.hat.ETBB^2 / v.hat.JAB.ETBB )^(1/5)) )) # different bias order for tapered blocks
+			
+	SMBB.phi <- sum(diag(cov(SMBB.boot.D.n.l.1))) # estimated trace of cov(D.n) from all SMBB bootstraps, block size l.1
+	SMBB.JAB.phi.tilde <- (1/m)*( N * SMBB.phi - (N - m) * SMBB.JAB.phi.hat) # pseudo values, cf. pg. 192 Lahiri (2003)
+	var.hat.JAB.SMBB <- m/(N - m) * mean((SMBB.JAB.phi.tilde - SMBB.phi )^2) # formula (7.53), pg. 192 of Lahiri (2003)
+	v.hat.JAB.SMBB <-   n/l.1 * var.hat.JAB.SMBB # pg. 195 of Lahiri (2003)
+	B.hat.SMBB <- 2*l.1*(sum(diag(cov(SMBB.boot.D.n.l.1))) - sum(diag(cov(SMBB.boot.D.n.l.2)))) # pg. 195 of Lahiri (2003)
+	l.opt.SMBB <- min(round(n/2),max(1,round(  n^(1/3) * ( 2 * B.hat.SMBB^2 / v.hat.JAB.SMBB )^(1/3) ))) # eq. (7.57), pg. 194 of Lahiri(2003)
+
+	SETBB.phi <- sum(diag(cov(SETBB.boot.D.n.l.1))) # estimated trace of cov(D.n) from all SETBB bootstraps, block size l.1
+	SETBB.JAB.phi.tilde <- (1/m)*( N * SETBB.phi - (N - m) * SETBB.JAB.phi.hat) # pseudo values, cf. pg. 192 Lahiri (2003)
+	var.hat.JAB.SETBB <- m/(N - m) * mean((SETBB.JAB.phi.tilde - SETBB.phi )^2) # formula (7.53), pg. 192 of Lahiri (2003)
+	v.hat.JAB.SETBB <-   n/l.1 * var.hat.JAB.SETBB # pg. 195 of Lahiri (2003)
+	B.hat.SETBB <- (4/3)*l.1^2*(sum(diag(cov(SETBB.boot.D.n.l.1))) - sum(diag(cov(SETBB.boot.D.n.l.2)))) # pg. 195 of Lahiri (2003)
+	l.opt.SETBB <- min(round(n/2),max(1,round(  n^(1/5) * ( 4 * B.hat.SETBB^2 / v.hat.JAB.SETBB )^(1/5)) )) # different bias order for tapered blocks
+
+out <- list(l.opt.MBB  = l.opt.MBB ,
+			l.opt.ETBB = l.opt.ETBB,
+			l.opt.SMBB = l.opt.SMBB,
+			l.opt.SETBB = l.opt.SETBB)
+			
+return(out)
 					
 }
