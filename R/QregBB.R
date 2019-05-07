@@ -99,29 +99,7 @@ AllBBgetweights <- function(n,l,B,seed=NA,c=.43){
 #' @param u a real number.
 #' @param c a constant controlling the tapering.
 #' @return the value of the tapering function.
-omega <- function(u,c=.43)
-{
-	 
-	( u <= c) * u/c + ((u > c) & (u < 1 - c)) + (u >= 1-c) *(1 - u)/c   
-	
-	if( (u <= 0) & (u <= c)){
-		
-			return(u/c)
-		
-	} else if ( (u > c) & (u < 1 - c)){
-		
-			return(1)
-		
-	} else if( (u >= 1-c) & (u <= 1)){
-		
-			return((1 - u)/c)
-		
-	} else {
-		
-			return(0)
-			
-	}
-}
+omega <- function( u,c=.43){ ( u <= c) * u/c + ((u > c) & (u < 1 - c)) + (u >= 1-c) *(1 - u)/c}
 
 #' Computes expected value of the bootstrap weights assigned to each time point by the ETBB
 #'
