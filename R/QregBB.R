@@ -1,3 +1,99 @@
+#' Retrieve weights from from Monte-Carlo block samples for the ETBB
+#'
+#' @param n length of observed time series.
+#' @param l block length.
+#' @param B the number of Monte-Carlo draws.
+#' @param seed a random number generating seed (optional).
+#' @param c a constant controlling the tapering of weight assignments over the blocks.
+#' @return a list containing an \code{n} by \code{B} matrix containing the the mass placed on the \code{n} observations by the ETBB empirical distribution in each of the \code{B} Monte-Carlo draws. Another object in the list gives more info.
+ETBBgetweights<-function(n,l,B,seed=NA,c=.43){
+
+	if(is.na(seed)) seed<-floor(runif(1)*100000)
+
+	ETBBweights<-.C("ETBBgetweights",
+	n = as.integer(n),
+	l = as.integer(l),
+	B = as.integer(B),
+	blkpts = integer(floor(n/l+1)),
+	f_tilde = double(B*n+l),
+	as.integer(seed),
+	weights = double(l),
+	as.double(c))		
+
+	weights <- matrix( ETBBweights$f_tilde[1:(n*B)],n,B)
+
+	output <-  list(ETBBweights = weights,
+			other = ETBBweights)
+
+	return(output)
+}
+
+
+#' Retrieve weights from from Monte-Carlo block samples for the MBB
+#'
+#' @param n length of observed time series.
+#' @param l block length.
+#' @param B the number of Monte-Carlo draws.
+#' @param seed a random number generating seed (optional).
+#' @return a list containing an \code{n} by \code{B} matrix containing the the mass placed on the \code{n} observations by the MBB empirical distribution in each of the \code{B} Monte-Carlo draws. Another object in the list gives more info.
+MBBgetweights<-function(n,l,B,seed=NA){
+
+	if(is.na(seed)) seed<-floor(runif(1)*100000)
+
+	MBBweights<-.C("MBBgetweights",
+	n = as.integer(n),
+	l = as.integer(l),
+	B = as.integer(B),
+	blkpts = integer(floor(n/l+1)),
+	f_tilde = double(B*n+l),
+	as.integer(seed))		
+
+	weights <- matrix( MBBweights$f_tilde[1:(n*B)],n,B)
+
+	output <-  list(MBBweights = weights,
+					other = MBBweights)
+
+	return(output)
+}
+
+#' Retrieve weights from from Monte-Carlo block samples for the MBB and ETBB
+#'
+#' @param n length of observed time series.
+#' @param l block length.
+#' @param B the number of Monte-Carlo draws.
+#' @param c a constant controlling the tapering of weight assignments over the blocks.
+#' @param seed a random number generating seed (optional).
+#' @return a list containing \code{n} by \code{B} matrices containing the the mass placed on the \code{n} observations by the MBB and ETBB empirical distributions in each of the \code{B} Monte-Carlo draws, the sampled indices for the block starting points, and the scalar \eqn{m_l} corresponding to the weight function and the block length.
+AllBBgetweights <- function(n,l,B,seed=NA,c=.43){
+
+	if(is.na(seed)) seed <- floor(runif(1)*100000)
+
+	AllBBweights<-.C("AllBBgetweights",
+	n = as.integer(n),
+	l = as.integer(l),
+	B = as.integer(B),
+	blkpts = integer(B*floor(n/l)),
+	f_MBB = double(B*n+l),
+	f_ETBB = double(B*n+l),
+	as.integer(seed),
+	weights = double(l),
+	as.double(c),
+	m_l = double(1))		
+
+	ETBBweights <- matrix( AllBBweights$f_ETBB[1:(n*B)],n,B)
+	MBBweights <- matrix( AllBBweights$f_MBB[1:(n*B)],n,B)
+	blkpoints <-  matrix( AllBBweights$blkpts,floor(n/l),B) + 1
+
+	output <-  list(ETBBweights = ETBBweights,
+					MBBweights = MBBweights,
+					blkpoints = blkpoints,
+					m_l = AllBBweights$m_l )
+
+
+	return(output)
+}
+
+
 #' Function defining the tapered assignment of weights across the ETBB blocks
 #'
 #' @param u a real number.

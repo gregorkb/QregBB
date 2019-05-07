@@ -1,4 +1,3 @@
 useDynLib(QregBB)
 exportPattern("^[[:alpha:]]+")
-
 import(quantreg)
