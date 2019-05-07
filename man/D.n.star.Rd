@@ -15,7 +15,7 @@ D.n.star(Y, X, beta, tau, pi.star)
 
 \item{tau}{the quantile of interest.}
 
-\item{pi.star}{weights retrieved from the \code{AllBBgetweights} function.}
+\item{pi.star}{weights retrieved from the \code{BBgetweights} function.}
 }
 \description{
 Computes D.star from paper

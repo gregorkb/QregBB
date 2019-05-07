@@ -6,11 +6,11 @@
 #' @param c a constant controlling the tapering of weight assignments over the blocks.
 #' @param seed a random number generating seed (optional).
 #' @return a list containing \code{n} by \code{B} matrices containing the the mass placed on the \code{n} observations by the MBB and ETBB empirical distributions in each of the \code{B} Monte-Carlo draws, the sampled indices for the block starting points, and the scalar \eqn{m_l} corresponding to the weight function and the block length.
-AllBBgetweights <- function(n,l,B,seed=NA,c=.43){
+BBgetweights <- function(n,l,B,seed=NA,c=.43){
 
 	if(is.na(seed)) seed <- floor(runif(1)*100000)
 
-	AllBBweights<-.C("AllBBgetweights",
+	BBweights<-.C("BBgetweights",
 	n = as.integer(n),
 	l = as.integer(l),
 	B = as.integer(B),
@@ -22,14 +22,14 @@ AllBBgetweights <- function(n,l,B,seed=NA,c=.43){
 	as.double(c),
 	m_l = double(1))		
 
-	ETBBweights <- matrix( AllBBweights$f_ETBB[1:(n*B)],n,B)
-	MBBweights <- matrix( AllBBweights$f_MBB[1:(n*B)],n,B)
-	blkpoints <-  matrix( AllBBweights$blkpts,floor(n/l),B) + 1
+	ETBBweights <- matrix( BBweights$f_ETBB[1:(n*B)],n,B)
+	MBBweights <- matrix( BBweights$f_MBB[1:(n*B)],n,B)
+	blkpoints <-  matrix( BBweights$blkpts,floor(n/l),B) + 1
 
 	output <-  list(ETBBweights = ETBBweights,
 					MBBweights = MBBweights,
 					blkpoints = blkpoints,
-					m_l = AllBBweights$m_l )
+					m_l = BBweights$m_l )
 
 
 	return(output)
@@ -146,10 +146,10 @@ QregBB <- function(Y,X,tau,l,B=500,h=NULL,alpha=0.05)
 		h <- bw.SJ(model$resid)
 	} 
 	
-	AllBBgetweights.out <- AllBBgetweights(n,l,B)	
-	MBB.weights <- AllBBgetweights.out$MBBweights
-	ETBB.weights <- AllBBgetweights.out$ETBBweights
-	m.l <- AllBBgetweights.out$m_l
+	BBgetweights.out <- BBgetweights(n,l,B)	
+	MBB.weights <- BBgetweights.out$MBBweights
+	ETBB.weights <- BBgetweights.out$ETBBweights
+	m.l <- BBgetweights.out$m_l
 
 	pi.tilde.MBB <- get.pi.tilde.MBB(n,l)
 	pi.tilde.ETBB <- get.pi.tilde.ETBB(n,l)
@@ -259,7 +259,7 @@ IinJ <- function(I,J){sum(I %in% J) == 0}
 #' @param Y the vector of response values.
 #' @param X the design matrix (including a column of ones for the intercept).
 #' @param beta parameter vector at which to compute the objective function.
-#' @param pi.star weights retrieved from the \code{AllBBgetweights} function.
+#' @param pi.star weights retrieved from the \code{BBgetweights} function.
 #' @param tau the quantile of interest.
 #' @returns the value of \eqn{\tilde D_n^*} from the paper.
 D.n.star <- function(Y,X,beta,tau,pi.star)
@@ -309,10 +309,10 @@ getNPPIblksizesQR <- function(Y,X,tau,min.in.JAB=100)
 
 	############## l.1 ##########
 				
-	AllBBweights.out.l.1 <- AllBBgetweights( n, l.1 ,B= B)
-	pi.star.MBB.l.1 <- AllBBweights.out.l.1$MBBweights
-	pi.star.ETBB.l.1 <- AllBBweights.out.l.1$ETBBweights
-	m.l.l.1 <- AllBBweights.out.l.1$m_l
+	BBweights.out.l.1 <- BBgetweights( n, l.1 ,B= B)
+	pi.star.MBB.l.1 <- BBweights.out.l.1$MBBweights
+	pi.star.ETBB.l.1 <- BBweights.out.l.1$ETBBweights
+	m.l.l.1 <- BBweights.out.l.1$m_l
 	
 	beta.tilde.MBB.l.1 <- rq(	Y ~ X+0,
 								tau =  tau,
@@ -342,10 +342,10 @@ getNPPIblksizesQR <- function(Y,X,tau,min.in.JAB=100)
 								
 	############## l.2 ##########	
 		
-	AllBBweights.out.l.2 <- AllBBgetweights( n, l.2 ,B= B)
-	pi.star.MBB.l.2 <- AllBBweights.out.l.2$MBBweights
-	pi.star.ETBB.l.2 <- AllBBweights.out.l.2$ETBBweights
-	m.l.l.2 <- AllBBweights.out.l.2$m_l							
+	BBweights.out.l.2 <- BBgetweights( n, l.2 ,B= B)
+	pi.star.MBB.l.2 <- BBweights.out.l.2$MBBweights
+	pi.star.ETBB.l.2 <- BBweights.out.l.2$ETBBweights
+	m.l.l.2 <- BBweights.out.l.2$m_l							
 								
 	beta.tilde.MBB.l.2 <- rq(	Y ~ X+0,
 								tau =  tau,
@@ -416,7 +416,7 @@ getNPPIblksizesQR <- function(Y,X,tau,min.in.JAB=100)
 	for(k in 1:M)
 	{
 
-		which.for.k <- apply(AllBBweights.out.l.1$blkpoints, 2, IinJ , I = c(k:(k+m-1)) )  
+		which.for.k <- apply(BBweights.out.l.1$blkpoints, 2, IinJ , I = c(k:(k+m-1)) )  
 		MBB.JAB.phi.hat[k] <-  sum(diag(cov(MBB.boot.D.n.l.1[which.for.k,]))) 	# estimated variance of sum(D.n) from MBB bootstraps which.for.k, block size l.1
 		ETBB.JAB.phi.hat[k] <-  sum(diag(cov(ETBB.boot.D.n.l.1[which.for.k,])))	# estimated variance of sum(D.n) from ETBB bootstraps which.for.k, block size l.1
 		SMBB.JAB.phi.hat[k] <-  sum(diag(cov(SMBB.boot.D.n.l.1[which.for.k,]))) # estimated variance of sum(D.n) from MBB bootstraps which.for.k, block size l.1
