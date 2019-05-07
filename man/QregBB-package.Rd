@@ -1,6 +1,5 @@
 \name{QregBB-package}
 \alias{QregBB-package}
-\alias{QregBB}
 \docType{package}
 \title{
 \packageTitle{QregBB}
