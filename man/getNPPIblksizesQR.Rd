@@ -22,3 +22,15 @@ This function is based on the nonparametric plug-in (NPPI) method discussed in L
 \description{
 Chooses block sizes for MBB, ETBB, SMBB, and SETBB via the NPPI for quantile regression
 }
+\examples{
+# generate some data and use NPPI to choose block sizes for MBB, SMBB, ETBB, and SETBB.
+n <- 100
+X1 <- arima.sim(model=list(ar=c(.7,.1)),n)
+X2 <- arima.sim(model=list(ar=c(.2,.1)),n)
+e <- arima.sim(model=list(ar=c(.7,.1)),n)
+Y <- X1 + e
+X <- cbind(rep(1,n),X1,X2)
+
+blksize.out <- getNPPIblksizesQR(Y,X,tau=.5)
+blksize.out
+}

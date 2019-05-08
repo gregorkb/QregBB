@@ -27,3 +27,18 @@ a list containing for the MBB, SMBB, ETBB, and SETBB the set of Monte Carlo draw
 \description{
 Implements MBB, ETBB, SMBB, and SETBB for quantile regression
 }
+\examples{
+# generate some data and perform block-bootstrap methods
+n <- 100
+X1 <- arima.sim(model=list(ar=c(.7,.1)),n)
+X2 <- arima.sim(model=list(ar=c(.2,.1)),n)
+e <- arima.sim(model=list(ar=c(.7,.1)),n)
+Y <- X1 + e
+X <- cbind(rep(1,n),X1,X2)
+
+QregBB.out <- QregBB(Y,X,tau=.5,l=4,B=5000,h=NULL,alpha=0.05)
+QregBB.out$MBB.confint
+QregBB.out$SMBB.confint
+QregBB.out$ETBB.confint
+QregBB.out$MBB.confint
+}
