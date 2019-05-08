@@ -8,11 +8,10 @@
 \packageDescription{QregBB}
 }
 \details{
-
-The DESCRIPTION file:
+Implements moving-blocks bootstrap and extended tapered-blocks bootstrap, as well as smooth versions of each, for quantile regression in time series. This package accompanies Gregory et al. (2018).
 \packageDESCRIPTION{QregBB}
 \packageIndices{QregBB}
-~~ An overview of how to use the package, including the most important functions ~~
+The main function is the \code{QregBB} function, which implements the moving-blocks bootstrap (MBB), the extended tapered-blocks bootstrap (ETBB), and smooth versions of each (SMBB, SETBB). The function \code{getNPPIblksizesQR} chooses the block size based on the non-parametric plug-in method described in Lahiri (2013).
 }
 \author{
 \packageAuthor{QregBB}
@@ -20,7 +19,11 @@ The DESCRIPTION file:
 Maintainer: \packageMaintainer{QregBB}
 }
 \references{
-~~ Literature or other references for background information ~~
+
+Gregory, K. B., Lahiri, S. N., & Nordman, D. J. (2018). A smooth block bootstrap for quantile regression with time series. The Annals of Statistics, 46(3), 1138-1166.
+
+Lahiri, S. N. (2013). Resampling methods for dependent data. Springer Science & Business Media.
+
 }
 ~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R ~~
 ~~ documentation directory ~~
@@ -30,5 +33,20 @@ Maintainer: \packageMaintainer{QregBB}
 ~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
 }
 \examples{
-~~ simple examples of the most important functions ~~
+n <- 100
+X1 <- arima.sim(model=list(ar=c(.7,.1)),n)
+X2 <- arima.sim(model=list(ar=c(.2,.1)),n)
+e <- arima.sim(model=list(ar=c(.7,.1)),n)
+Y <- X1 + e
+X <- cbind(rep(1,n),X1,X2)
+
+QregBB.out <- QregBB(Y,X,tau=.5,l=4,B=500,h=NULL,alpha=0.05)
+
+QregBB.out$MBB.confint
+QregBB.out$SMBB.confint
+QregBB.out$ETBB.confint
+QregBB.out$SETBB.confint
+
+blksize.out <- getNPPIblksizesQR(Y,X,tau=.5)
+blksize.out
 }
