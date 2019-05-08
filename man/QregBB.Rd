@@ -2,7 +2,7 @@
 % Please edit documentation in R/QregBB.R
 \name{QregBB}
 \alias{QregBB}
-\title{Computes bootstrap expected value of the quantile regression objective function}
+\title{Implements MBB, ETBB, SMBB, and SETBB for quantile regression}
 \usage{
 QregBB(Y, X, tau, l, B = 500, h = NULL, alpha = 0.05)
 }
@@ -25,5 +25,5 @@ QregBB(Y, X, tau, l, B = 500, h = NULL, alpha = 0.05)
 a list containing for the MBB, SMBB, ETBB, and SETBB the set of Monte Carlo draws of the pivot quantity \eqn{\sqrt{n}(\hat \beta^*_n - \tilde \beta_n)}, confidence intervals for each component of \eqn{\beta} corresponding to the specified confidence level, and estimates of the asymptotic covariance matrix of the pivot quantity \eqn{\sqrt{n}(\hat \beta_n - \beta)}.
 }
 \description{
-Computes bootstrap expected value of the quantile regression objective function
+Implements MBB, ETBB, SMBB, and SETBB for quantile regression
 }

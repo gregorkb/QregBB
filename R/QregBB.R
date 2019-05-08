@@ -123,7 +123,7 @@ S.tilde <- function(beta,Y,X,pi.tilde,h,tau)
 
 }
 
-#' Computes bootstrap expected value of the quantile regression objective function
+#' Implements MBB, ETBB, SMBB, and SETBB for quantile regression
 #'
 #' @param Y the vector of response values.
 #' @param X the design matrix (including a column of ones for the intercept).
@@ -269,7 +269,7 @@ D.n.star <- function(Y,X,beta,tau,pi.star)
 	
 }
 
-#' Chooses block sizes via the NPPI for quantile regression
+#' Chooses block sizes for MBB, ETBB, SMBB, and SETBB via the NPPI for quantile regression
 #'
 #' @param Y the vector of response values.
 #' @param X the design matrix (including a column of ones for the intercept).

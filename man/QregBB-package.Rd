@@ -27,11 +27,7 @@ Lahiri, S. N. (2013). Resampling methods for dependent data. Springer Science & 
 }
 ~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R ~~
 ~~ documentation directory ~~
-\keyword{ package }
-\seealso{
-~~ Optional links to other man pages, e.g. ~~
-~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
-}
+\keyword{ block bootstrap }
 \examples{
 n <- 100
 X1 <- arima.sim(model=list(ar=c(.7,.1)),n)

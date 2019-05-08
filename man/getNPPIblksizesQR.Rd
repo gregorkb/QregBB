@@ -2,7 +2,7 @@
 % Please edit documentation in R/QregBB.R
 \name{getNPPIblksizesQR}
 \alias{getNPPIblksizesQR}
-\title{Chooses block sizes via the NPPI for quantile regression}
+\title{Chooses block sizes for MBB, ETBB, SMBB, and SETBB via the NPPI for quantile regression}
 \usage{
 getNPPIblksizesQR(Y, X, tau, min.in.JAB = 100)
 }
@@ -20,5 +20,5 @@ a list of the NPPI-selected block sizes for the MBB, SMBB, ETBB, and SETBB.
 This function is based on the nonparametric plug-in (NPPI) method discussed in Lahiri (2003), which makes use of the jackknife-after-bootstrap (JAB).
 }
 \description{
-Chooses block sizes via the NPPI for quantile regression
+Chooses block sizes for MBB, ETBB, SMBB, and SETBB via the NPPI for quantile regression
 }
