@@ -11,7 +11,7 @@
 Implements moving-blocks bootstrap and extended tapered-blocks bootstrap, as well as smooth versions of each, for quantile regression in time series. This package accompanies Gregory et al. (2018).
 \packageDESCRIPTION{QregBB}
 \packageIndices{QregBB}
-The main function is the \code{QregBB} function, which implements the moving-blocks bootstrap (MBB), the extended tapered-blocks bootstrap (ETBB), and smooth versions of each (SMBB, SETBB). The function \code{getNPPIblksizesQR} chooses the block size based on the non-parametric plug-in method described in Lahiri (2013).
+The main function is the \code{QregBB} function, which implements the moving-blocks bootstrap (MBB), the extended tapered-blocks bootstrap (ETBB), and smooth versions of each (SMBB, SETBB). The function \code{getNPPIblksizesQR} chooses the block size based on the non-parametric plug-in method described in Lahiri (2013). For the smooth methods, the bandwidth is chosen by using the function \code{bw.SJ} function on the fitted residuals; then the bandwidth matrix is the identity matrix times the value returned by \code{bw.SJ}.
 }
 \author{
 \packageAuthor{QregBB}
