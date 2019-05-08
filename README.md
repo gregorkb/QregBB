@@ -11,4 +11,4 @@ See the package documentation for details. Install with the R commands:
 
 install.packages("devtools")
 
-devtools::install_github("gregorkb/aenetgt")
+devtools::install_github("gregorkb/QregBB")
