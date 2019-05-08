@@ -133,6 +133,21 @@ S.tilde <- function(beta,Y,X,pi.tilde,h,tau)
 #' @param h a scalar bandwidth (bandwidth matrix is \code{h} times identity).
 #' @param alpha a significance level to which the returned confidence intervals will correspond.
 #' @return a list containing for the MBB, SMBB, ETBB, and SETBB the set of Monte Carlo draws of the pivot quantity \eqn{\sqrt{n}(\hat \beta^*_n - \tilde \beta_n)}, confidence intervals for each component of \eqn{\beta} corresponding to the specified confidence level, and estimates of the asymptotic covariance matrix of the pivot quantity \eqn{\sqrt{n}(\hat \beta_n - \beta)}.
+#'
+#' @examples
+#' # generate some data and perform block-bootstrap methods
+#' n <- 100
+#' X1 <- arima.sim(model=list(ar=c(.7,.1)),n)
+#' X2 <- arima.sim(model=list(ar=c(.2,.1)),n)
+#' e <- arima.sim(model=list(ar=c(.7,.1)),n)
+#' Y <- X1 + e
+#' X <- cbind(rep(1,n),X1,X2)
+#'
+#' QregBB.out <- QregBB(Y,X,tau=.5,l=4,B=5000,h=NULL,alpha=0.05)
+#' QregBB.out$MBB.confint
+#' QregBB.out$SMBB.confint
+#' QregBB.out$ETBB.confint
+#' QregBB.out$MBB.confint
 QregBB <- function(Y,X,tau,l,B=500,h=NULL,alpha=0.05)
 {
 	
@@ -279,6 +294,18 @@ D.n.star <- function(Y,X,beta,tau,pi.star)
 #' @param min.in.JAB the minimum number of Monte-Carlos draws desired in each jackknife draw
 #' @return a list of the NPPI-selected block sizes for the MBB, SMBB, ETBB, and SETBB.
 #' This function is based on the nonparametric plug-in (NPPI) method discussed in Lahiri (2003), which makes use of the jackknife-after-bootstrap (JAB).
+#'
+#' @examples
+#' # generate some data and use NPPI to choose block sizes for MBB, SMBB, ETBB, and SETBB.
+#' n <- 100
+#' X1 <- arima.sim(model=list(ar=c(.7,.1)),n)
+#' X2 <- arima.sim(model=list(ar=c(.2,.1)),n)
+#' e <- arima.sim(model=list(ar=c(.7,.1)),n)
+#' Y <- X1 + e
+#' X <- cbind(rep(1,n),X1,X2)
+#' 
+#' blksize.out <- getNPPIblksizesQR(Y,X,tau=.5)
+#' blksize.out
 getNPPIblksizesQR <- function(Y,X,tau,min.in.JAB=100)
 {
 		
