@@ -141,7 +141,9 @@ QregBB <- function(Y,X,tau,l,B=500,h=NULL,alpha=0.05)
 
 	model <- rq(Y ~ X[,-1], tau = tau)
 	beta.hat <- model$coef
-	if( length(h)==0)
+	names(beta.hat) <- c("(Intercept)",paste("beta",1:d,sep="_"))
+	
+	if( length(h) == 0 )
 	{
 		h <- bw.SJ(model$resid)
 	} 
