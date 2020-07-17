@@ -25,8 +25,8 @@ Gregory, K. B., Lahiri, S. N., & Nordman, D. J. (2018). A smooth block bootstrap
 Lahiri, S. N. (2013). Resampling methods for dependent data. Springer Science & Business Media.
 
 }
-~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R ~~
-~~ documentation directory ~~
+
+
 \keyword{ block bootstrap }
 \examples{
 n <- 100
