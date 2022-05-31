@@ -1,3 +1,5 @@
+
+
 #' Retrieve weights from from Monte-Carlo block samples for the MBB and ETBB
 #'
 #' @param n length of observed time series.
@@ -10,7 +12,7 @@ BBgetweights <- function(n,l,B,seed=NA,c=.43){
 
 	if(is.na(seed)) seed <- floor(runif(1)*100000)
 
-	BBweights<-.C("BBgetweights",
+	BBweights <- .C("BBgetweights",
 	n = as.integer(n),
 	l = as.integer(l),
 	B = as.integer(B),
@@ -268,7 +270,11 @@ QregBB <- function(Y,X,tau,l,B=500,h=NULL,alpha=0.05)
 					
 }
 
-
+#' A function asking how many members of I are members of J
+#' 
+#' @param I a vector
+#' @param J a vector
+#' @return the number of entries in \code{I} which are also in \code{J}.
 IinJ <- function(I,J){sum(I %in% J) == 0}
 
 #' Computes D.star from paper

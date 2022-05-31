@@ -1,3 +1,5 @@
 useDynLib(QregBB)
 exportPattern("^[[:alpha:]]+")
 import(quantreg)
+importFrom("stats", "bw.SJ", "cov", "dnorm", "nlm", "pnorm",
+               "quantile", "rnorm", "runif")

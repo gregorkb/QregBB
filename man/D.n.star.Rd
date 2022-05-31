@@ -17,6 +17,9 @@ D.n.star(Y, X, beta, tau, pi.star)
 
 \item{pi.star}{weights retrieved from the \code{BBgetweights} function.}
 }
+\value{
+the value of \eqn{\tilde D_n^*} from the paper.
+}
 \description{
 Computes D.star from paper
 }
