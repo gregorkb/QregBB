@@ -35,6 +35,7 @@ BBgetweights <- function(n,l,B,seed=NA,c=.43){
 	                m_l = BBweights$m_l )
 	
 	return(output)
+	
 }
 
 
@@ -149,7 +150,7 @@ S.tilde <- function(beta,Y,X,pi.tilde,h,tau)
 #' Y <- X1 + e
 #' X <- cbind(rep(1,n),X1,X2)
 #'
-#' QregBB.out <- QregBB(Y,X,tau=.5,l=4,B=5000,h=NULL,alpha=0.05)
+#' QregBB.out <- QregBB(Y,X,tau=.5,l=4,B=500,h=NULL,alpha=0.05)
 #' QregBB.out
 #' @export
 QregBB <- function(Y,X,tau,l,B=500,h=NULL,alpha=0.05)
@@ -282,7 +283,8 @@ QregBB <- function(Y,X,tau,l,B=500,h=NULL,alpha=0.05)
 
 #' Print method for class \code{QregBB}
 #' @export
-print.QregBB <- function(x){
+#' @noRd
+print.QregBB <- function(x,...){
   
   cat("\nCall:\n",
       paste(deparse(x$call), sep="\n", collapse = "\n"), "\n", sep = "")

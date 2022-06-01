@@ -38,11 +38,6 @@ X <- cbind(rep(1,n),X1,X2)
 
 QregBB.out <- QregBB(Y,X,tau=.5,l=4,B=500,h=NULL,alpha=0.05)
 
-QregBB.out$MBB.confint
-QregBB.out$SMBB.confint
-QregBB.out$ETBB.confint
-QregBB.out$SETBB.confint
+QregBB.out
 
-blksize.out <- getNPPIblksizesQR(Y,X,tau=.5)
-blksize.out
 }
