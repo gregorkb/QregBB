@@ -8,6 +8,7 @@
 #' @param c a constant controlling the tapering of weight assignments over the blocks.
 #' @param seed a random number generating seed (optional).
 #' @return a list containing \code{n} by \code{B} matrices containing the the mass placed on the \code{n} observations by the MBB and ETBB empirical distributions in each of the \code{B} Monte-Carlo draws, the sampled indices for the block starting points, and the scalar \eqn{m_l} corresponding to the weight function and the block length.
+#' @noRd
 BBgetweights <- function(n,l,B,seed=NA,c=.43){
 
 	if(is.na(seed)) seed <- floor(runif(1)*100000)
@@ -29,11 +30,10 @@ BBgetweights <- function(n,l,B,seed=NA,c=.43){
 	blkpoints <-  matrix( BBweights$blkpts,floor(n/l),B) + 1
 
 	output <-  list(ETBBweights = ETBBweights,
-					MBBweights = MBBweights,
-					blkpoints = blkpoints,
-					m_l = BBweights$m_l )
-
-
+	                MBBweights = MBBweights,
+	                blkpoints = blkpoints,
+	                m_l = BBweights$m_l )
+	
 	return(output)
 }
 
@@ -43,6 +43,7 @@ BBgetweights <- function(n,l,B,seed=NA,c=.43){
 #' @param u a real number.
 #' @param c a constant controlling the tapering.
 #' @return the value of the tapering function.
+#' @noRd
 omega <- function( u,c=.43){ ( u <= c) * u/c + ((u > c) & (u < 1 - c)) + (u >= 1-c) *(1 - u)/c}
 
 #' Computes expected value of the bootstrap weights assigned to each time point by the ETBB
@@ -51,6 +52,7 @@ omega <- function( u,c=.43){ ( u <= c) * u/c + ((u > c) & (u < 1 - c)) + (u >= 1
 #' @param l the block length.
 #' @param c a number controlling the tapering.
 #' @return a vector of length \code{n} containing the expected values of the weights assigned to each time point by the ETBB.
+#' @noRd
 get.pi.tilde.ETBB <- function(n,l,c=.43)
 {
 	if(l==1)
@@ -80,6 +82,7 @@ get.pi.tilde.ETBB <- function(n,l,c=.43)
 #' @param n the length of the observed time series.
 #' @param l the block length.
 #' @return a vector of length \code{n} containing the expected values of the weights assigned to each time point by the MBB.
+#' @noRd
 get.pi.tilde.MBB <- function(n,l)
 {
 	if(l==1)
@@ -112,6 +115,7 @@ get.pi.tilde.MBB <- function(n,l)
 #' @param tau the quantile of interest.
 #' @return the value of the bootstrap expected value of the quantile regression objective function at the given beta.
 #' This function will be numerically maximized in order to define the SMBB and SETBB versions of the true parameter vector; that is, the maximizer of this function is used as the centering \eqn{\tilde \beta_n} in the pivot \eqn{\sqrt{n}(\hat \beta^*_n - \tilde \beta_n)} rather than the sample estimator.
+#' @noRd
 S.tilde <- function(beta,Y,X,pi.tilde,h,tau)
 {
 	
@@ -146,10 +150,8 @@ S.tilde <- function(beta,Y,X,pi.tilde,h,tau)
 #' X <- cbind(rep(1,n),X1,X2)
 #'
 #' QregBB.out <- QregBB(Y,X,tau=.5,l=4,B=5000,h=NULL,alpha=0.05)
-#' QregBB.out$MBB.confint
-#' QregBB.out$SMBB.confint
-#' QregBB.out$ETBB.confint
-#' QregBB.out$MBB.confint
+#' QregBB.out
+#' @export
 QregBB <- function(Y,X,tau,l,B=500,h=NULL,alpha=0.05)
 {
 	
@@ -254,20 +256,67 @@ QregBB <- function(Y,X,tau,l,B=500,h=NULL,alpha=0.05)
 	SETBB.upci <- beta.hat - apply(SETBB.pivot,2,quantile,alpha/2)/sqrt(n)
 	SETBB.confint <- cbind(SETBB.loci,SETBB.upci)
 	
-	output <- list( MBB.pivot = MBB.pivot,
-					ETBB.pivot = MBB.pivot,
-					SMBB.pivot = SMBB.pivot,
-					SETBB.pivot = SETBB.pivot,
-					MBB.confint = MBB.confint,
-					ETBB.confint = ETBB.confint,
-					SMBB.confint = SMBB.confint,
-					SETBB.confint = SETBB.confint,
-					MBB.cov.est = MBB.cov.est,
-					ETBB.cov.est = ETBB.cov.est,
-					SMBB.cov.est = SMBB.cov.est,
-					SETBB.cov.est = SETBB.cov.est
-					)
-					
+	output <- list( beta.hat = beta.hat,
+	                MBB.pivot = MBB.pivot,
+					        ETBB.pivot = MBB.pivot,
+        					SMBB.pivot = SMBB.pivot,
+        					SETBB.pivot = SETBB.pivot,
+        					MBB.confint = MBB.confint,
+        					ETBB.confint = ETBB.confint,
+        					SMBB.confint = SMBB.confint,
+        					SETBB.confint = SETBB.confint,
+        					MBB.cov.est = MBB.cov.est,
+        					ETBB.cov.est = ETBB.cov.est,
+        					SMBB.cov.est = SMBB.cov.est,
+        					SETBB.cov.est = SETBB.cov.est
+					      )
+	
+	output$call <- match.call()
+	
+	class(output) <- "QregBB"
+	
+	return(output)
+	
+}
+
+
+#' Print method for class \code{QregBB}
+#' @export
+print.QregBB <- function(x){
+  
+  cat("\nCall:\n",
+      paste(deparse(x$call), sep="\n", collapse = "\n"), "\n", sep = "")
+  
+  cat("\nCoefficients:\n")
+  
+  table <- as.table(cbind(round(x$beta.hat,5),
+                          round(sqrt(diag(x$MBB.cov.est)),5),
+                          round(sqrt(diag(x$SMBB.cov.est)),5),
+                          round(sqrt(diag(x$ETBB.cov.est)),5),
+                          round(sqrt(diag(x$SETBB.cov.est)),5)))
+  
+  colnames(table) <- c("Estimate","SE (MBB)","SE (SMBB)","SE (ETBB)","SE (SETBB)")
+  rownames(table) <- names(x$beta.hat)
+  print(table)
+  
+  cat("\nConfidence intervals:\n")
+  
+  table <- as.table(cbind(round(x$beta.hat,5),
+                          round(x$MBB.confint,5),
+                          round(x$SMBB.confint,5),
+                          round(x$ETBB.confint,5),
+                          round(x$SETBB.confint,5)))
+  
+  colnames(table) <- c("Estimate",
+                       "lower (MBB)","upper (MBB)",
+                       "lower (SMBB)","upper (SMBB)",
+                       "lower (ETBB)","upper (ETBB)",
+                       "lower (SETBB)","upper (SETBB)")
+  
+  rownames(table) <- names(x$beta.hat)
+  
+  print(table)
+  
 }
 
 #' A function asking how many members of I are members of J
@@ -275,6 +324,7 @@ QregBB <- function(Y,X,tau,l,B=500,h=NULL,alpha=0.05)
 #' @param I a vector
 #' @param J a vector
 #' @return the number of entries in \code{I} which are also in \code{J}.
+#' @noRd
 IinJ <- function(I,J){sum(I %in% J) == 0}
 
 #' Computes D.star from paper
@@ -285,6 +335,7 @@ IinJ <- function(I,J){sum(I %in% J) == 0}
 #' @param pi.star weights retrieved from the \code{BBgetweights} function.
 #' @param tau the quantile of interest.
 #' @returns the value of \eqn{\tilde D_n^*} from the paper.
+#' @noRd
 D.n.star <- function(Y,X,beta,tau,pi.star)
 {
 	
@@ -312,6 +363,7 @@ D.n.star <- function(Y,X,beta,tau,pi.star)
 #' 
 #' blksize.out <- getNPPIblksizesQR(Y,X,tau=.5)
 #' blksize.out
+#' @export
 getNPPIblksizesQR <- function(Y,X,tau,min.in.JAB=100)
 {
 		
@@ -342,7 +394,7 @@ getNPPIblksizesQR <- function(Y,X,tau,min.in.JAB=100)
 	MBB.boot.D.n.l.2 <- ETBB.boot.D.n.l.2 <- matrix(NA,B,d+1)
 	SMBB.boot.D.n.l.2  <- SETBB.boot.D.n.l.2<- matrix(NA,B,d+1)
 
-	############## l.1 ##########
+	# l.1
 				
 	BBweights.out.l.1 <- BBgetweights( n, l.1 ,B= B)
 	pi.star.MBB.l.1 <- BBweights.out.l.1$MBBweights
@@ -375,7 +427,7 @@ getNPPIblksizesQR <- function(Y,X,tau,min.in.JAB=100)
 								tau =  tau,
 								iterlim = 200)$estimate
 								
-	############## l.2 ##########	
+	# l.2
 		
 	BBweights.out.l.2 <- BBgetweights( n, l.2 ,B= B)
 	pi.star.MBB.l.2 <- BBweights.out.l.2$MBBweights
@@ -414,7 +466,7 @@ getNPPIblksizesQR <- function(Y,X,tau,min.in.JAB=100)
 			Y.smooth <- Y + rnorm(n,0,sj.bw)
 			X.smooth <- X + cbind(rep(0,n),matrix(rnorm(n*d,0,sj.bw),n,d))
 		
-			############## l.1 ##########
+			# l.1
 																								
 			MBB.boot.D.n.l.1[b,] <- D.n.star(Y,X,beta.tilde.MBB.l.1,tau= tau,pi.star.MBB.l.1[b])		
 			
@@ -424,7 +476,7 @@ getNPPIblksizesQR <- function(Y,X,tau,min.in.JAB=100)
 			
 			SETBB.boot.D.n.l.1[b,] <- D.n.star(Y,X,beta.tilde.SETBB.l.1,tau= tau,pi.star.ETBB.l.1[b])		
 			
-			############## l.2 ##########
+			# l.2 
 												
 			MBB.boot.D.n.l.2[b,] <- D.n.star(Y,X,beta.tilde.MBB.l.2,tau= tau,pi.star.MBB.l.2[b])		
 			
@@ -436,12 +488,12 @@ getNPPIblksizesQR <- function(Y,X,tau,min.in.JAB=100)
 															
 		}
 		
-#######################################################################################################
-#######################################################################################################
-######  Choose block sizes with NPPI - okay, we will pretend that we are trying to estimate the trace of Sigma.
-######  There is a function of X with asymptotic variance equal to this trace...
-#######################################################################################################
-#######################################################################################################
+
+
+# Choose block sizes with NPPI - okay, we will pretend that we are trying to estimate the trace of Sigma.
+# There is a function of X with asymptotic variance equal to this trace...
+
+
 			
 	M <- ( n-l.1+1) - m + 1 # sample size after removing m blocks of length l.1
 	N <-  n - l.1 + 1
