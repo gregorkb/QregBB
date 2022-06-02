@@ -356,7 +356,7 @@ D.n.star <- function(Y,X,beta,tau,pi.star)
 #'
 #' @examples
 #' # generate some data and use NPPI to choose block sizes for MBB, SMBB, ETBB, and SETBB.
-#' n <- 100
+#' n <- 50
 #' X1 <- arima.sim(model=list(ar=c(.7,.1)),n)
 #' X2 <- arima.sim(model=list(ar=c(.2,.1)),n)
 #' e <- arima.sim(model=list(ar=c(.7,.1)),n)
