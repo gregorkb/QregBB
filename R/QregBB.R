@@ -139,8 +139,16 @@ S.tilde <- function(beta,Y,X,pi.tilde,h,tau)
 #' @param B the number of Monte Carlo bootstrap samples to draw.
 #' @param h a scalar bandwidth (bandwidth matrix is \code{h} times identity).
 #' @param alpha a significance level to which the returned confidence intervals will correspond.
-#' @return a list containing for the MBB, SMBB, ETBB, and SETBB the set of Monte Carlo draws of the pivot quantity \eqn{\sqrt{n}(\hat \beta^*_n - \tilde \beta_n)}, confidence intervals for each component of \eqn{\beta} corresponding to the specified confidence level, and estimates of the asymptotic covariance matrix of the pivot quantity \eqn{\sqrt{n}(\hat \beta_n - \beta)}.
+#' @return A list is returned containing for the MBB, SMBB, ETBB, and SETBB the set of Monte Carlo draws of the pivot quantity \eqn{\sqrt{n}(\hat \beta^*_n - \tilde \beta_n)}, confidence intervals for each component of \eqn{\beta} corresponding to the specified confidence level, and estimates of the asymptotic covariance matrix of the pivot quantity \eqn{\sqrt{n}(\hat \beta_n - \beta)}.
 #'
+#' @seealso  A `print.QregBB` method exists which prints to the console the bootstrap standard errors for each coefficient estimator from the MBB, SMBB, ETBB, and SETBB methods as well as confidence intervals for each coefficient at the specified level.
+#'
+#' @references 
+#' 
+#' #' @references 
+#' 
+#' Gregory, K. B., Lahiri, S. N., & Nordman, D. J. (2018). A smooth block bootstrap for quantile regression with time series. \emph{The Annals of Statistics}, 46(3), 1138-1166.
+#' 
 #' @examples
 #' # generate some data and perform block-bootstrap methods
 #' n <- 100
@@ -351,8 +359,15 @@ D.n.star <- function(Y,X,beta,tau,pi.star)
 #' @param X the design matrix (including a column of ones for the intercept).
 #' @param tau the quantile of interest.
 #' @param min.in.JAB the minimum number of Monte-Carlos draws desired in each jackknife draw
-#' @return a list of the NPPI-selected block sizes for the MBB, SMBB, ETBB, and SETBB.
-#' This function is based on the nonparametric plug-in (NPPI) method discussed in Lahiri (2003), which makes use of the jackknife-after-bootstrap (JAB).
+#' @return Returns a list of the NPPI-selected block sizes for the MBB, SMBB, ETBB, and SETBB.
+#' 
+#' @details This function is based on the nonparametric plug-in (NPPI) method discussed in Lahiri (2003), which makes use of the jackknife-after-bootstrap (JAB).
+#'
+#' @references 
+#' 
+#' Gregory, K. B., Lahiri, S. N., & Nordman, D. J. (2018). A smooth block bootstrap for quantile regression with time series. \emph{The Annals of Statistics}, 46(3), 1138-1166.
+#' 
+#' Lahiri, S. N. (2003). Resampling Methods for Dependent Data. Springer, New York.
 #'
 #' @examples
 #' # generate some data and use NPPI to choose block sizes for MBB, SMBB, ETBB, and SETBB.

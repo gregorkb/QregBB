@@ -7,5 +7,5 @@ Author: Karl Gregory
 Maintainer: Karl Gregory <gregorkb@stat.sc.edu>
 Description: Implements moving-blocks bootstrap and extended tapered-blocks bootstrap, as well as smooth versions of each, for quantile regression in time series. This package accompanies the paper: Gregory, K. B., Lahiri, S. N., & Nordman, D. J. (2018). A smooth block bootstrap for quantile regression with time series. The Annals of Statistics, 46(3), 1138-1166.
 License: GPL-3
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.0
 Imports: quantreg

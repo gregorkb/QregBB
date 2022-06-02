@@ -16,15 +16,17 @@ getNPPIblksizesQR(Y, X, tau, min.in.JAB = 100)
 \item{min.in.JAB}{the minimum number of Monte-Carlos draws desired in each jackknife draw}
 }
 \value{
-a list of the NPPI-selected block sizes for the MBB, SMBB, ETBB, and SETBB.
-This function is based on the nonparametric plug-in (NPPI) method discussed in Lahiri (2003), which makes use of the jackknife-after-bootstrap (JAB).
+Returns a list of the NPPI-selected block sizes for the MBB, SMBB, ETBB, and SETBB.
 }
 \description{
 Chooses block sizes for MBB, ETBB, SMBB, and SETBB via the NPPI for quantile regression
 }
+\details{
+This function is based on the nonparametric plug-in (NPPI) method discussed in Lahiri (2003), which makes use of the jackknife-after-bootstrap (JAB).
+}
 \examples{
 # generate some data and use NPPI to choose block sizes for MBB, SMBB, ETBB, and SETBB.
-n <- 100
+n <- 50
 X1 <- arima.sim(model=list(ar=c(.7,.1)),n)
 X2 <- arima.sim(model=list(ar=c(.2,.1)),n)
 e <- arima.sim(model=list(ar=c(.7,.1)),n)
@@ -33,4 +35,9 @@ X <- cbind(rep(1,n),X1,X2)
 
 blksize.out <- getNPPIblksizesQR(Y,X,tau=.5)
 blksize.out
+}
+\references{
+Gregory, K. B., Lahiri, S. N., & Nordman, D. J. (2018). A smooth block bootstrap for quantile regression with time series. \emph{The Annals of Statistics}, 46(3), 1138-1166.
+
+Lahiri, S. N. (2003). Resampling Methods for Dependent Data. Springer, New York.
 }

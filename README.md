@@ -25,7 +25,7 @@ You can install the development version of QregBB from
 devtools::install_github("gregorkb/QregBB")
 ```
 
-## Example
+## Examples
 
 The main function in the package is `QregBB`, which performs the MBB,
 SMBB, ETBB, and SETBB bootstrap procedures (all at once) for estimating
@@ -50,19 +50,19 @@ QregBB.out
 #> 
 #> Coefficients:
 #>             Estimate SE (MBB) SE (SMBB) SE (ETBB) SE (SETBB)
-#> (Intercept)  1.01493  0.68347   0.62171   0.62154    0.59565
-#> beta_1       0.79606  0.32682   0.29734   0.30377    0.28419
-#> beta_2       0.31152  0.34370   0.38398   0.39091    0.37435
+#> (Intercept) -1.19048  0.30832   0.35614   0.29801    0.34243
+#> beta_1       1.37104  0.14455   0.16978   0.13906    0.16874
+#> beta_2       0.00682  0.18293   0.24371   0.20035    0.24457
 #> 
 #> Confidence intervals:
 #>             Estimate lower (MBB) upper (MBB) lower (SMBB) upper (SMBB)
-#> (Intercept)  1.01493    -0.27172     2.30680     -0.14704      2.29554
-#> beta_1       0.79606     0.00708     1.07686      0.16048      1.35850
-#> beta_2       0.31152    -0.38721     0.91367     -0.45135      1.01176
+#> (Intercept) -1.19048    -2.01656    -0.78747     -1.93770     -0.61313
+#> beta_1       1.37104     1.00985     1.56780      1.00313      1.64540
+#> beta_2       0.00682    -0.44854     0.28923     -0.47015      0.45646
 #>             lower (ETBB) upper (ETBB) lower (SETBB) upper (SETBB)
-#> (Intercept)     -0.10149      2.30319      -0.03575       2.35307
-#> beta_1           0.14920      1.16432       0.16888       1.31251
-#> beta_2          -0.72947      0.66229      -0.48280       0.97010
+#> (Intercept)     -1.97114     -0.76846      -1.83370      -0.58475
+#> beta_1           1.03540      1.59665       0.96382       1.67961
+#> beta_2          -0.49587      0.29042      -0.47396       0.43994
 ```
 
 The function `getNPPIblksizesQR` implements the block size selection
@@ -73,24 +73,20 @@ SETBB.
 blksize.out <- getNPPIblksizesQR(Y,X,tau=.5)
 blksize.out
 #> $l.opt.MBB
-#> [1] 25
+#> [1] 23
 #> 
 #> $l.opt.ETBB
-#> [1] 6
+#> [1] 3
 #> 
 #> $l.opt.SMBB
-#> [1] 1
+#> [1] 25
 #> 
 #> $l.opt.SETBB
-#> [1] 2
+#> [1] 3
 ```
 
 <!--
 You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
 
 In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
 -->

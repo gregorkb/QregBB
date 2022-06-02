@@ -22,7 +22,7 @@ QregBB(Y, X, tau, l, B = 500, h = NULL, alpha = 0.05)
 \item{alpha}{a significance level to which the returned confidence intervals will correspond.}
 }
 \value{
-a list containing for the MBB, SMBB, ETBB, and SETBB the set of Monte Carlo draws of the pivot quantity \eqn{\sqrt{n}(\hat \beta^*_n - \tilde \beta_n)}, confidence intervals for each component of \eqn{\beta} corresponding to the specified confidence level, and estimates of the asymptotic covariance matrix of the pivot quantity \eqn{\sqrt{n}(\hat \beta_n - \beta)}.
+A list is returned containing for the MBB, SMBB, ETBB, and SETBB the set of Monte Carlo draws of the pivot quantity \eqn{\sqrt{n}(\hat \beta^*_n - \tilde \beta_n)}, confidence intervals for each component of \eqn{\beta} corresponding to the specified confidence level, and estimates of the asymptotic covariance matrix of the pivot quantity \eqn{\sqrt{n}(\hat \beta_n - \beta)}.
 }
 \description{
 Implements MBB, ETBB, SMBB, and SETBB for quantile regression
@@ -38,4 +38,12 @@ X <- cbind(rep(1,n),X1,X2)
 
 QregBB.out <- QregBB(Y,X,tau=.5,l=4,B=500,h=NULL,alpha=0.05)
 QregBB.out
+}
+\references{
+#' @references 
+
+Gregory, K. B., Lahiri, S. N., & Nordman, D. J. (2018). A smooth block bootstrap for quantile regression with time series. *The Annals of Statistics*, 46(3), 1138-1166.
+}
+\seealso{
+A `print.QregBB` method exists which prints to the console the bootstrap standard errors for each coefficient estimator from the MBB, SMBB, ETBB, and SETBB methods as well as confidence intervals for each coefficient at the specified level.
 }
