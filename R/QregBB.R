@@ -143,9 +143,7 @@ S.tilde <- function(beta,Y,X,pi.tilde,h,tau)
 #'
 #' @seealso  A `print.QregBB` method exists which prints to the console the bootstrap standard errors for each coefficient estimator from the MBB, SMBB, ETBB, and SETBB methods as well as confidence intervals for each coefficient at the specified level.
 #'
-#' @references 
-#' 
-#' #' @references 
+#' @references
 #' 
 #' Gregory, K. B., Lahiri, S. N., & Nordman, D. J. (2018). A smooth block bootstrap for quantile regression with time series. \emph{The Annals of Statistics}, 46(3), 1138-1166.
 #' 
