@@ -22,7 +22,7 @@ Maintainer: \packageMaintainer{QregBB}
 
 Gregory, K. B., Lahiri, S. N., & Nordman, D. J. (2018). A smooth block bootstrap for quantile regression with time series. \emph{The Annals of Statistics}, 46(3), 1138-1166.
 
-Lahiri, S. N. (2013). Resampling methods for dependent data. Springer Science & Business Media.
+Lahiri, S. N. (2003). Resampling Methods for Dependent Data. Springer, New York.
 
 }
 
